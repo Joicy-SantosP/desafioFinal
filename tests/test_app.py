@@ -9,7 +9,6 @@ if not hasattr(werkzeug, '__version__'):
 class APITestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        # Criação do cliente de teste
         cls.client = app.test_client()
 
     def test_home(self):
@@ -20,8 +19,16 @@ class APITestCase(unittest.TestCase):
 
     def test_login_missing_credentials(self):
         """Testa login sem credenciais (deve falhar)."""
-        response = self.client.post('/login', data={})  # Dados vazios
+        # Enviando JSON vazio para simular falta de credenciais
+        response = self.client.post('/login', json={})
         self.assertEqual(response.status_code, 400)  # Bad Request
+
+    def test_login_with_credentials(self):
+        """Testa login com credenciais válidas (deve passar)."""
+        payload = {"username": "user", "password": "pass"}
+        response = self.client.post('/login', json=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('access_token', response.json)
 
     def test_protected_invalid_method(self):
         """Testa acesso à rota protegida com método inválido (ex: POST)."""

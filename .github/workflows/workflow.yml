@@ -7,34 +7,56 @@ on:
   pull_request:
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+
       - name: Install dependencies
         run: pip install -r requirements.txt
-      - name: Run tests
-        run: python -m unittest discover -s tests/
 
-  deploy:
-    needs: build-and-test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      - name: Build Docker image
+        run: docker build -t desafiofinal:latest .
+
+  test:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: python -m unittest discover -s tests
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Install Render CLI
         run: curl -fsSL https://cdn.render.com/cli/install.sh | bash
-      - name: Authenticate with Render
+
+      - name: Set Render API key
+        run: echo "$RENDER_API_KEY" > ~/.render-token
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-        run: |
-          echo "$RENDER_API_KEY" > ~/.render-token
+
       - name: Deploy to Render
-        run: |
-          render deploy --service-name desafioFinal --branch main
+        run: render deploy --service-name desafioFinal --branch main
