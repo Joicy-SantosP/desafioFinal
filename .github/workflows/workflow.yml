@@ -49,14 +49,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Install Render CLI
-        run: curl -fsSL https://cdn.render.com/cli/install.sh | bash
-
-      - name: Set Render API key
-        run: echo "$RENDER_API_KEY" > ~/.render-token
-        env:
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-
-      - name: Deploy to Render
-        run: render deploy --service-name desafioFinal --branch main
+      
+      - name: aaa
+        run: curl -X POST "https://api.render.com/deploy/srv-d0v3lrp5pdvs73835gsg?key=fKTvUZtGXy4"
